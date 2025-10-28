@@ -4,9 +4,9 @@
 export async function GET() {
   return Response.json({
   "accountAssociation": {  // these will be added in step 5
-    "header": "",
-    "payload": "",
-    "signature": ""
+    "header": "eyJmaWQiOjI1MzUxMiwidHlwZSI6ImF1dGgiLCJrZXkiOiIweEFiNzAwZEFBNTRBOTEzZjhjRGZjQjVmYjkzQ2ZkZDM5NTAyODlGRWIifQ",
+    "payload": "eyJkb21haW4iOiJoYW5nbWFuLW5pbmUtdGF1LnZlcmNlbC5hcHAifQ",
+    "signature": "iQNDL5YwRqyUaXpI9pkWtThAwp0WQCfq9Mw5pSa5yo9P7spQiyJNAc23wRkDCP13ULoFVXdNaaxpUs8qN7Qkjhs="
   },
   "baseBuilder": {
     "ownerAddress": "0xE01CFDD6e6cB41C2b33605138BB2E53E492A5CB3" // add your Base Account address here
