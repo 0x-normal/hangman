@@ -15,7 +15,7 @@ export async function GET() {
     "version": "1",
     "name": "Hangman Game",
     "homeUrl": "https://hangman-nine-tau.vercel.app/",
-    "iconUrl": "https://ex.co/i.png",
+    "iconUrl": "https://raw.githubusercontent.com/0x-normal/hangman/refs/heads/main/public/assets/logo.png",
     "splashImageUrl": "https://ex.co/l.png",
     "splashBackgroundColor": "#ffffff",
     "webhookUrl": "https://ex.co/api/webhook",
@@ -27,7 +27,7 @@ export async function GET() {
       "https://ex.co/s3.png"
     ],
     "primaryCategory": "games",
-    "tags": ["game", "quiz", "games", "fun", "miniapp", "baseapp", "hangman", "based"],
+    "tags": ["game", "games", "fun", "miniapp", "baseapp", "hangman", "based"],
     "heroImageUrl": "https://ex.co/og.png",
     "tagline": "Play instantly",
     "ogTitle": "Example Mini App",
