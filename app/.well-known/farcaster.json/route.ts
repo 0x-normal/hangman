@@ -17,7 +17,7 @@ export async function GET() {
     "homeUrl": "https://hangman-nine-tau.vercel.app/",
     "iconUrl": "https://ex.co/i.png",
     "splashImageUrl": "https://ex.co/l.png",
-    "splashBackgroundColor": "#ffa96a",
+    "splashBackgroundColor": "#ffa672",
     "webhookUrl": "https://ex.co/api/webhook",
     "subtitle": "Fast, fun, social",
     "description": "A fast, fun way to challenge friends in real time.",
