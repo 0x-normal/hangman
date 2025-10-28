@@ -14,7 +14,7 @@ export async function GET() {
   "miniapp": {
     "version": "1",
     "name": "Hangman Game",
-    "homeUrl": "https://ex.co",
+    "homeUrl": "https://hangman-nine-tau.vercel.app/",
     "iconUrl": "https://ex.co/i.png",
     "splashImageUrl": "https://ex.co/l.png",
     "splashBackgroundColor": "#ffffff",
