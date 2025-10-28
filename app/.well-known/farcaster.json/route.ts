@@ -27,7 +27,7 @@ export async function GET() {
       "https://ex.co/s3.png"
     ],
     "primaryCategory": "games",
-    "tags": ["game", "games", "fun", "miniapp", "baseapp", "hangman", "based"],
+    "tags": ["game", "fun", "miniapp", "baseapp", "hangman", "based"],
     "heroImageUrl": "https://ex.co/og.png",
     "tagline": "Play instantly",
     "ogTitle": "Example Mini App",
