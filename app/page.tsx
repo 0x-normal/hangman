@@ -1,10 +1,10 @@
 'use client';
+import { sdk } from '@farcaster/miniapp-sdk';
 import { useEffect } from 'react';
 
 export default function Page() {
-  // NOTE: Remove the 'sdk.actions.ready()' call from here!
-  // This is necessary if the iframe is calling it as well.
-
+  useEffect(() => { sdk.actions.ready(); }, []);
+  
   return (
     <iframe
       src="/hangman.html"
