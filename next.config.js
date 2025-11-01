@@ -1,21 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add an async rewrites function
-  async rewrites() {
+  // Use redirects instead of rewrites for the static file entry point
+  async redirects() {
     return [
       {
-        // Source path: When a user visits the root of the app (e.g., https://your-app.com/)
+        // Source path: When a user visits the root of the app
         source: '/',
-        // Destination path: Tell Next.js to internally serve the static HTML file
-        destination: '/public/hangman.html',
+        // Destination path: Redirects the browser to the static HTML file
+        destination: '/hangman.html',
+        // Make this a permanent redirect
+        permanent: true,
       },
     ];
   },
 
-  // This setting ensures static files like hangman.html are treated correctly by the server
-  // and is often a good default for Mini Apps.
+  // This is still required to create the static build
   output: 'export', 
 };
 
 module.exports = nextConfig;
-
