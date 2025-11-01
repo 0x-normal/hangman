@@ -1356,8 +1356,14 @@
         </div>
     </div>
 
-    <script>
-        // ========= WALLET & PAYMENT SYSTEM =========
+    <script type="module">
+        // ========= FARCASTER SDK & WALLET SYSTEM =========
+        import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk@0.2.2';
+        
+        // Initialize Farcaster SDK
+        sdk.actions.ready();
+        console.log("Farcaster SDK initialized");
+
         const GAME_FEE_ETH = '0.00001';
         const DEVELOPER_WALLET = '0xE01CFDD6e6cB41C2b33605138BB2E53E492A5CB3'; // REPLACE WITH YOUR WALLET
 
@@ -1381,6 +1387,26 @@
             container.innerHTML = '';
         }
 
+        async function getProvider() {
+            try {
+                console.log("Trying Farcaster SDK provider...");
+                const farcasterProvider = await sdk.wallet.getEthereumProvider();
+                if (farcasterProvider) {
+                    console.log("✅ Using Farcaster provider");
+                    return farcasterProvider;
+                }
+            } catch (e) {
+                console.log("Farcaster provider not available, trying window.ethereum...");
+            }
+
+            if (typeof window.ethereum !== 'undefined') {
+                console.log("✅ Using window.ethereum (MetaMask)");
+                return window.ethereum;
+            }
+
+            return null;
+        }
+
         async function handleConnectWallet() {
             if (isProcessing) return;
             
@@ -1392,16 +1418,16 @@
             console.log("Attempting wallet connection...");
             
             try {
-                // Check if window.ethereum is available
-                if (typeof window.ethereum === 'undefined') {
-                    throw new Error('No wallet detected! Please install MetaMask or use a Web3-enabled browser.');
+                const provider = await getProvider();
+                
+                if (!provider) {
+                    throw new Error('No wallet detected! Please install MetaMask or use a Farcaster wallet.');
                 }
 
                 showStatusMessage('2/3: Requesting account access...', 'info');
                 console.log("Wallet provider found. Requesting accounts...");
 
-                // Request accounts from MetaMask/wallet
-                const accounts = await window.ethereum.request({ 
+                const accounts = await provider.request({ 
                     method: 'eth_requestAccounts' 
                 });
                 
@@ -1409,16 +1435,25 @@
                     userAddress = accounts[0];
                     console.log("Account connected:", userAddress);
 
-                    showStatusMessage('3/3: Connected successfully!', 'info');
+                    showStatusMessage('3/3: Getting user data...', 'info');
                     
-                    // Try to get FID (may not be available)
-                    fid = null;
+                    // Try to get FID from Farcaster
+                    try {
+                        if (typeof sdk.getUserData === 'function') {
+                            const userData = await sdk.getUserData();
+                            if (userData && userData.fid) {
+                                fid = userData.fid;
+                                console.log("FID retrieved:", fid);
+                            }
+                        }
+                    } catch (fidError) {
+                        console.log("FID not available:", fidError);
+                    }
                     
                     setTimeout(() => {
-                        showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}`, 'success');
+                        showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}${fid ? ', FID: ' + fid : ''}`, 'success');
                     }, 500);
 
-                    // Update UI
                     connectBtn.textContent = `✅ Connected: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
                     connectBtn.disabled = true;
                     startBtn.disabled = false;
@@ -1455,13 +1490,15 @@
             showStatusMessage('1/3: Preparing transaction...', 'info');
 
             try {
-                if (typeof window.ethereum === 'undefined') {
+                const provider = await getProvider();
+                
+                if (!provider) {
                     throw new Error('Wallet provider not found.');
                 }
                 
                 showStatusMessage('2/3: Please approve the payment in your wallet...', 'info');
 
-                const hash = await window.ethereum.request({
+                const hash = await provider.request({
                     method: 'eth_sendTransaction',
                     params: [{
                         from: userAddress, 
@@ -1477,6 +1514,7 @@
                     document.getElementById('wallet-screen').style.display = 'none';
                     document.getElementById('difficulty-screen').style.display = 'block';
                     clearStatusMessage();
+                    isProcessing = false;
                 }, 1500);
 
             } catch (e) {
@@ -1484,9 +1522,8 @@
                 const errorMsg = e.message.includes('User denied') ? 'Transaction rejected by user' : e.message.split('.')[0];
                 showStatusMessage(`❌ Payment failed: ${errorMsg}`, 'error');
                 startBtn.disabled = false;
+                isProcessing = false;
             }
-            
-            isProcessing = false;
         }
 
         function goBackToWallet() {
@@ -1499,8 +1536,17 @@
             document.getElementById('difficulty-screen').style.display = 'block';
         }
 
+        // Make functions globally available
+        window.handleConnectWallet = handleConnectWallet;
+        window.handleStartGame = handleStartGame;
+        window.goBackToWallet = goBackToWallet;
+        window.goBackToDifficulty = goBackToDifficulty;
+
         document.getElementById('connect-wallet-btn').addEventListener('click', handleConnectWallet);
         document.getElementById('start-game-btn').addEventListener('click', handleStartGame);
+
+        // Export for use in play again
+        window.triggerPaymentAndStart = handleStartGame;
 
         // ========= GAME LOGIC =========
         const wordDatabase = {
@@ -1825,25 +1871,37 @@
             init();
         }
 
-        function playAgain() {
+        async function playAgain() {
             const modal = document.getElementById('game-modal');
             modal.classList.remove('show');
             
+            // Reset game stats
             currentStreak = 0;
             allTimeWins = 0;
             usedWords = [];
             
+            // Reset hangman display
             hangmanParts.forEach(part => {
                 const element = document.getElementById(part);
                 if (element) element.style.display = 'none';
             });
             
+            // Hide game container
             document.getElementById('game-container').style.display = 'none';
+            
+            // Show wallet screen
             document.getElementById('wallet-screen').style.display = 'block';
             
-            document.getElementById('connect-wallet-btn').textContent = 'Connect Wallet';
-            document.getElementById('connect-wallet-btn').disabled = false;
-            document.getElementById('start-game-btn').disabled = true;
+            // Keep wallet connected but trigger payment
+            if (userAddress) {
+                // Wallet still connected, just trigger payment
+                await window.triggerPaymentAndStart();
+            } else {
+                // Need to reconnect
+                document.getElementById('connect-wallet-btn').textContent = 'Connect Wallet';
+                document.getElementById('connect-wallet-btn').disabled = false;
+                document.getElementById('start-game-btn').disabled = true;
+            }
         }
 
         function useHint() {
