@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hangman Game</title>
+
+    <!-- Farcaster SDK -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -77,6 +82,152 @@
             }
         }
 
+        /* Wallet Connection Screen */
+        .wallet-screen {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 540px;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-header {
+            background: #5a6ecc;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .wallet-header::before {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+        }
+
+        .wallet-title h1 {
+            color: white;
+            font-size: 42px;
+            margin: 0;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .wallet-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            margin: 10px 0 0 0;
+            font-weight: normal;
+            line-height: 1.4;
+        }
+
+        .wallet-content {
+            background: linear-gradient(180deg, #f5e6d3 0%, #f0d9c0 100%);
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .wallet-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: white;
+            border: 8px solid #2d2d2d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin: 20px 0;
+        }
+
+        .wallet-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .connect-btn, .start-game-btn {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            width: 100%;
+        }
+
+        .start-game-btn {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .connect-btn:hover, .start-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(155, 89, 182, 0.5);
+        }
+
+        .start-game-btn:hover {
+            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.5);
+        }
+
+        .connect-btn:disabled, .start-game-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-message {
+            padding: 15px 20px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            word-wrap: break-word;
+        }
+
+        .status-error {
+            background: rgba(244, 67, 54, 0.8);
+            color: white;
+        }
+
+        .status-success {
+            background: rgba(76, 175, 80, 0.8);
+            color: white;
+        }
+
+        .status-info {
+            background: rgba(33, 150, 243, 0.8);
+            color: white;
+        }
+
+        .wallet-info {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+        }
+
         /* Difficulty Selection Screen */
         .difficulty-screen {
             background: linear-gradient(180deg, #d64545 0%, #8b3a3a 100%);
@@ -87,6 +238,7 @@
             padding: 0;
             position: relative;
             overflow: hidden;
+            display: none;
         }
 
         .difficulty-header {
@@ -329,6 +481,7 @@
             padding: 20px 15px;
             position: relative;
             border: 3px solid rgba(255, 255, 255, 0.3);
+            display: none;
         }
 
         .game-container::before {
@@ -671,13 +824,6 @@
             transform: scale(0.9);
         }
 
-        .key:disabled {
-            background: transparent;
-            color: #3d4d5c;
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
         .hint-btn {
             width: 60px;
             height: 60px;
@@ -936,7 +1082,25 @@
         }
 
         @media (max-width: 600px) {
-            /* Difficulty Screen Mobile */
+            .wallet-title h1 {
+                font-size: 32px;
+            }
+
+            .wallet-subtitle {
+                font-size: 14px;
+            }
+
+            .wallet-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 50px;
+            }
+
+            .connect-btn, .start-game-btn {
+                font-size: 18px;
+                padding: 15px 30px;
+            }
+
             .difficulty-title h1 {
                 font-size: 28px;
             }
@@ -987,7 +1151,6 @@
                 font-size: 24px;
             }
 
-            /* Game Screen Mobile */
             .keyboard {
                 grid-template-columns: repeat(7, 1fr);
                 gap: 5px;
@@ -1065,164 +1228,44 @@
                 padding: 15px 10px;
             }
         }
-
-        /* Tablet portrait */
-        @media (min-width: 601px) and (max-width: 900px) {
-            .keyboard {
-                grid-template-columns: repeat(10, 1fr);
-                gap: 8px;
-            }
-
-            .key {
-                font-size: 17px;
-                min-height: 40px;
-            }
-
-            .letter-box {
-                width: 45px;
-                height: 58px;
-            }
-
-            .letter {
-                font-size: 34px;
-            }
-
-            .game-container {
-                max-width: 600px;
-                padding: 25px 20px;
-            }
-        }
-
-        /* Large tablets and small desktops */
-        @media (min-width: 901px) and (max-width: 1200px) {
-            .game-container {
-                max-width: 650px;
-            }
-
-            .keyboard {
-                gap: 10px;
-            }
-
-            .key {
-                font-size: 20px;
-                min-height: 45px;
-            }
-
-            .stat-box {
-                padding: 12px 18px;
-            }
-
-            .stat-label {
-                font-size: 10px;
-            }
-
-            .stat-value {
-                font-size: 22px;
-            }
-        }
-
-        /* Extra small devices */
-        @media (max-width: 380px) {
-            .keyboard {
-                grid-template-columns: repeat(6, 1fr);
-                gap: 4px;
-            }
-
-            .key {
-                font-size: 13px;
-                min-height: 30px;
-                border-radius: 6px;
-            }
-
-            .letter-box {
-                width: 30px;
-                height: 45px;
-            }
-
-            .letter {
-                font-size: 24px;
-            }
-
-            .letter-line {
-                width: 25px;
-            }
-
-            .back-btn, .flag-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 20px;
-            }
-
-            .stat-box {
-                min-width: 75px;
-                padding: 5px 6px;
-            }
-
-            .stat-label {
-                font-size: 7px;
-            }
-
-            .stat-value {
-                font-size: 16px;
-            }
-
-            .hint-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 24px;
-            }
-
-            .modal-content {
-                padding: 20px 15px;
-            }
-
-            .modal-title {
-                font-size: 20px;
-            }
-
-            .answer-letter {
-                width: 32px;
-                height: 36px;
-                font-size: 16px;
-            }
-        }
-
-        /* Landscape orientation for phones */
-        @media (max-height: 600px) and (orientation: landscape) {
-            .game-container {
-                padding: 10px;
-                max-width: 90%;
-            }
-
-            .hangman-canvas {
-                min-height: 150px;
-                padding: 15px 10px;
-                margin: 10px 0;
-            }
-
-            .header {
-                margin-bottom: 10px;
-            }
-
-            .word-display {
-                margin: 10px 0;
-            }
-
-            .keyboard {
-                margin: 10px 0;
-            }
-
-            .hint-btn {
-                margin: 10px auto;
-            }
-        }
     </style>
 </head>
 <body>
+    <!-- Wallet Connection Screen -->
+    <div class="wallet-screen" id="wallet-screen">
+        <div class="wallet-header">
+            <div class="wallet-title">
+                <h1>HANGMAN</h1>
+                <p class="wallet-subtitle">Connect your wallet and play to win!</p>
+            </div>
+        </div>
+
+        <div class="wallet-content">
+            <div class="wallet-icon">👛</div>
+            
+            <div class="wallet-buttons">
+                <button class="connect-btn" id="connect-wallet-btn">
+                    Connect Wallet
+                </button>
+                <button class="start-game-btn" id="start-game-btn" disabled>
+                    Start Game (0.00001 ETH)
+                </button>
+            </div>
+
+            <div id="status-message-container"></div>
+
+            <div class="wallet-info">
+                🎮 Connect wallet to play<br>
+                💰 Fee: 0.00001 ETH per game<br>
+                🏆 Unlimited words • 3 hints per game
+            </div>
+        </div>
+    </div>
+
     <!-- Difficulty Selection Screen -->
     <div class="difficulty-screen" id="difficulty-screen">
         <div class="difficulty-header">
-            <button class="back-btn-diff" onclick="location.reload()">&#8249;</button>
+            <button class="back-btn-diff" onclick="goBackToWallet()">&#8249;</button>
             <div class="difficulty-title">
                 <h1>HANGMAN</h1>
                 <p class="subtitle">Guess all the letters that make up the word before you hang!</p>
@@ -1247,14 +1290,14 @@
 
             <div class="difficulty-buttons">
                 <button class="stats-btn-diff">📊</button>
-                <button class="play-btn" onclick="startGame()">PLAY</button>
+                <button class="play-btn" onclick="startGamePlay()">PLAY</button>
                 <button class="help-btn">❓</button>
             </div>
         </div>
     </div>
 
     <!-- Game Container -->
-    <div class="game-container" id="game-container" style="display: none;">
+    <div class="game-container" id="game-container">
         <div class="game-title">
             <div class="title-main">
                 <span class="title-icon">🎮</span>
@@ -1264,7 +1307,7 @@
             <div class="word-counter" id="word-counter">Word 1 of 500+</div>
         </div>
         <div class="header">
-            <button class="back-btn" onclick="location.reload()">&#8249;</button>
+            <button class="back-btn" onclick="goBackToDifficulty()">&#8249;</button>
             <div class="stats">
                 <div class="stat-box">
                     <div class="stat-label">CURRENT STREAK</div>
@@ -1324,22 +1367,215 @@
         </button>
     </div>
 
+    <!-- Game Over Modal -->
     <div class="modal" id="game-modal">
         <div class="modal-content">
             <div class="modal-title" id="modal-title">LEVEL FAILED</div>
             <div class="modal-subtitle">The correct answer is:</div>
             <div class="modal-answer" id="modal-answer"></div>
             <div class="modal-buttons">
-                <button class="modal-btn home-btn">🏠</button>
-                <button class="modal-btn next-btn" onclick="nextWord()">PLAY NEXT</button>
+                <button class="modal-btn home-btn" onclick="playAgain()">🏠 Play Again (Pay Fee)</button>
+                <button class="modal-btn next-btn" onclick="nextWord()">NEXT WORD</button>
                 <button class="modal-btn stats-btn">📊</button>
             </div>
         </div>
     </div>
 
+    <script type="module">
+        // ========= 1. Import Farcaster SDK =========
+        import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk';
+        sdk.actions.ready();
+        console.log("Farcaster SDK ready() called immediately.");
+
+        // ========= 2. Wallet & Payment Configuration =========
+        const GAME_FEE_ETH = '0.00001';
+        const DEVELOPER_WALLET = '0xE01CFDD6e6cB41C2b33605138BB2E53E492A5CB3'; // Replace with your wallet address
+
+        let userAddress = null;
+        let fid = null;
+        let isProcessing = false;
+
+        // ========= 3. Helper Functions =========
+        function parseEther(x) { 
+            const [w, f = ""] = String(x).split('.'); 
+            const frac = (f + '0'.repeat(18)).slice(0, 18); 
+            return '0x' + (BigInt(w) * 10n**18n + BigInt(frac)).toString(16); 
+        }
+        
+        async function getProvider() { 
+            try { 
+                console.log("Attempting to get provider via sdk.wallet.getEthereumProvider()");
+                const p = await sdk.wallet.getEthereumProvider(); 
+                if (p) {
+                    console.log("Farcaster provider found:", p);
+                    return p;
+                }
+            } catch(e) {
+                console.warn("Error getting Farcaster provider, falling back to window.ethereum", e);
+            } 
+            console.log("Farcaster provider not found, checking window.ethereum");
+            if (window.ethereum) {
+                console.log("window.ethereum found:", window.ethereum);
+                return window.ethereum;
+            }
+            console.log("No provider found.");
+            return null; 
+        }
+
+        function showStatusMessage(message, type = 'info') {
+            const container = document.getElementById('status-message-container');
+            container.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+        }
+
+        function clearStatusMessage() {
+            const container = document.getElementById('status-message-container');
+            container.innerHTML = '';
+        }
+
+        // ========= 4. Wallet Connection =========
+        async function handleConnectWallet() {
+            if (isProcessing) return;
+            
+            isProcessing = true;
+            const connectBtn = document.getElementById('connect-wallet-btn');
+            const startBtn = document.getElementById('start-game-btn');
+            
+            showStatusMessage('1/3: Locating wallet provider...', 'info');
+            console.log("Attempting wallet connection...");
+            
+            try {
+                const provider = await getProvider();
+                if (!provider) {
+                    throw new Error('No wallet provider available. Ensure you are in a Farcaster client or have a wallet extension.');
+                }
+                
+                showStatusMessage('2/3: Requesting account access...', 'info');
+                console.log("Provider found. Requesting accounts...");
+
+                const accounts = await provider.request({ method: 'eth_requestAccounts' });
+                
+                if (accounts && accounts.length > 0) {
+                    userAddress = accounts[0];
+                    console.log("Account connected:", userAddress);
+
+                    showStatusMessage('3/3: Getting user data...', 'info');
+                    try {
+                        console.log("Attempting to get user data from Farcaster SDK...");
+                        if (sdk && typeof sdk.getUserData === 'function') {
+                            const userData = await sdk.getUserData();
+                            if (userData && userData.fid) {
+                                fid = userData.fid;
+                                showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}, FID: ${userData.fid}`, 'success');
+                                console.log("User data retrieved:", userData);
+                            } else {
+                                fid = null; 
+                                showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)} (FID not available)`, 'success');
+                                console.log("Address connected, but FID not available via sdk.getUserData().");
+                            }
+                        } else {
+                            fid = null; 
+                            showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)} (FID function not available)`, 'success');
+                            console.log("sdk.getUserData() is not available.");
+                        }
+                    } catch (fidError) {
+                        fid = null; 
+                        showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)} (FID not available)`, 'success');
+                        console.warn("Could not get FID via sdk.getUserData():", fidError);
+                    }
+
+                    // Update UI
+                    connectBtn.textContent = `✅ Connected: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+                    connectBtn.disabled = true;
+                    startBtn.disabled = false;
+                } else {
+                    throw new Error('No accounts returned from wallet.');
+                }
+            } catch (e) {
+                console.error('Connection error:', e);
+                userAddress = null; 
+                fid = null;
+                showStatusMessage(`❌ Error: ${e.message}`, 'error');
+                connectBtn.disabled = false;
+                startBtn.disabled = true;
+            }
+            
+            isProcessing = false;
+        }
+
+        // ========= 5. Payment & Game Start =========
+        async function handleStartGame() {
+            if (!userAddress) {
+                showStatusMessage('Please connect your wallet first.', 'error');
+                return;
+            }
+            
+            if (DEVELOPER_WALLET === '0x...YOUR_WALLET_ADDRESS_HERE...' || DEVELOPER_WALLET.length < 42 || !DEVELOPER_WALLET.startsWith('0x')) {
+                showStatusMessage('⚠️ Developer: Please set a valid wallet address in the code!', 'error');
+                return;
+            }
+            
+            isProcessing = true;
+            const startBtn = document.getElementById('start-game-btn');
+            startBtn.disabled = true;
+            
+            showStatusMessage('1/3: Locating wallet provider...', 'info');
+
+            try {
+                const provider = await getProvider();
+                if (!provider) {
+                    throw new Error('No wallet provider found.');
+                }
+                
+                showStatusMessage('2/3: Please approve the payment in your wallet...', 'info');
+
+                const hash = await provider.request({
+                    method: 'eth_sendTransaction',
+                    params: [{
+                        from: userAddress, 
+                        to: DEVELOPER_WALLET, 
+                        value: parseEther(GAME_FEE_ETH), 
+                    }]
+                });
+                
+                showStatusMessage('✅ Payment complete! Starting game...', 'success');
+                console.log("Transaction Hash:", hash);
+                
+                setTimeout(() => {
+                    // Show difficulty screen
+                    document.getElementById('wallet-screen').style.display = 'none';
+                    document.getElementById('difficulty-screen').style.display = 'block';
+                    clearStatusMessage();
+                }, 1500);
+
+            } catch (e) {
+                console.error('Payment error:', e);
+                showStatusMessage(`❌ Payment failed: ${e.message.split('.')[0]}.`, 'error');
+                startBtn.disabled = false;
+            }
+            
+            isProcessing = false;
+        }
+
+        // ========= 6. Make functions global =========
+        window.handleConnectWallet = handleConnectWallet;
+        window.handleStartGame = handleStartGame;
+        window.goBackToWallet = function() {
+            document.getElementById('difficulty-screen').style.display = 'none';
+            document.getElementById('wallet-screen').style.display = 'block';
+        };
+        window.goBackToDifficulty = function() {
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('difficulty-screen').style.display = 'block';
+        };
+
+        // ========= 7. Event Listeners =========
+        document.getElementById('connect-wallet-btn').addEventListener('click', handleConnectWallet);
+        document.getElementById('start-game-btn').addEventListener('click', handleStartGame);
+    </script>
+
     <script>
+        // ========= Game Logic =========
         const wordDatabase = {
-            // Easy words - common everyday words (4-7 letters)
             easy: [
                 'APPLE', 'BOOK', 'CHAIR', 'DOOR', 'FISH', 'GAME', 'HAND', 'JUMP',
                 'KING', 'LAMP', 'MILK', 'NOSE', 'OPEN', 'PARK', 'RAIN', 'SNOW',
@@ -1358,7 +1594,6 @@
                 'THINK', 'TRAIN', 'TRUCK', 'TRUTH', 'VISIT', 'WOMAN'
             ],
             
-            // Medium words - words we often use (8-11 letters)
             medium: [
                 'COMPUTER', 'KEYBOARD', 'ELEPHANT', 'MOUNTAIN', 'CHOCOLATE', 'ADVENTURE',
                 'BEAUTIFUL', 'BUTTERFLY', 'CALENDAR', 'DIFFERENT', 'EDUCATION', 'EXCITING',
@@ -1381,7 +1616,6 @@
                 'TOMORROW', 'TREASURE', 'TRIANGLE', 'UMBRELLA', 'UNIVERSE', 'VACATION'
             ],
             
-            // Hard words - rare/complex words (12+ letters)
             hard: [
                 'ACCELERATION', 'ACHIEVEMENT', 'ACKNOWLEDGE', 'AGRICULTURAL', 'ALPHABETICAL',
                 'ANNIVERSARY', 'APPRECIATION', 'ARCHAEOLOGY', 'ARCHITECTURE', 'ARISTOCRACY',
@@ -1430,9 +1664,7 @@
 
         const hangmanParts = ['top-beam', 'support', 'rope', 'head', 'body', 'left-arm', 'right-arm', 'left-leg', 'right-leg'];
 
-        // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
-            // Difficulty slider functionality
             const difficultySlider = document.getElementById('difficulty-slider');
             const difficultyLabel = document.getElementById('difficulty-label');
             const difficultyIcon = document.getElementById('difficulty-icon');
@@ -1462,16 +1694,12 @@
                     selectedDifficulty = difficulty.name.toLowerCase();
                 });
             }
-
-            // Make startGame available globally
-            window.startGame = startGame;
         });
 
-        function startGame() {
+        function startGamePlay() {
             document.getElementById('difficulty-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
             
-            // Set word pool based on difficulty
             currentWordPool = wordDatabase[selectedDifficulty];
             usedWords = [];
             
@@ -1479,15 +1707,12 @@
         }
 
         function init() {
-            // Reset used words if all have been played
             if (usedWords.length >= currentWordPool.length) {
                 usedWords = [];
             }
             
-            // Get available words (not yet used)
             const availableWords = currentWordPool.filter(word => !usedWords.includes(word));
             
-            // Select random word from available words
             currentWord = availableWords[Math.floor(Math.random() * availableWords.length)];
             usedWords.push(currentWord);
             
@@ -1501,12 +1726,12 @@
             updateHintCount();
             updateStats();
             
-            // Setup hint button
             const hintBtn = document.getElementById('hint-btn');
             if (hintBtn) {
                 hintBtn.onclick = useHint;
             }
         }
+
         function createKeyboard() {
             const keyboard = document.getElementById('keyboard');
             keyboard.innerHTML = '';
@@ -1664,13 +1889,33 @@
             const modal = document.getElementById('game-modal');
             modal.classList.remove('show');
             
-            // Reset hangman display
             hangmanParts.forEach(part => {
                 const element = document.getElementById(part);
                 if (element) element.style.display = 'none';
             });
             
             init();
+        }
+
+        function playAgain() {
+            const modal = document.getElementById('game-modal');
+            modal.classList.remove('show');
+            
+            currentStreak = 0;
+            allTimeWins = 0;
+            usedWords = [];
+            
+            hangmanParts.forEach(part => {
+                const element = document.getElementById(part);
+                if (element) element.style.display = 'none';
+            });
+            
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('wallet-screen').style.display = 'block';
+            
+            document.getElementById('connect-wallet-btn').textContent = 'Connect Wallet';
+            document.getElementById('connect-wallet-btn').disabled = false;
+            document.getElementById('start-game-btn').disabled = true;
         }
 
         function useHint() {
@@ -1697,8 +1942,9 @@
             document.getElementById('word-counter').textContent = `Word ${usedWords.length} of ${currentWordPool.length}`;
         }
 
-        // Game starts from difficulty selection screen
-        // Player clicks PLAY button to begin
+        window.startGamePlay = startGamePlay;
+        window.nextWord = nextWord;
+        window.playAgain = playAgain;
     </script>
 </body>
 </html>
