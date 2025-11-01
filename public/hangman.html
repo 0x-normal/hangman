@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hangman Game</title>
 
-    <!-- Farcaster SDK -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
     <style>
         * {
             margin: 0;
@@ -1323,37 +1319,16 @@
 
         <div class="hangman-canvas">
             <svg class="hangman-svg" viewBox="0 0 400 250">
-                <!-- Base -->
                 <line x1="50" y1="220" x2="350" y2="220" stroke="#ff8c42" stroke-width="10" stroke-linecap="round"/>
-                
-                <!-- Pole -->
                 <line x1="150" y1="220" x2="150" y2="20" stroke="#c0504d" stroke-width="10" stroke-linecap="round" id="pole"/>
-                
-                <!-- Top beam -->
                 <line x1="150" y1="20" x2="280" y2="20" stroke="#c0504d" stroke-width="10" stroke-linecap="round" id="top-beam" style="display: none;"/>
-                
-                <!-- Support beam -->
                 <line x1="150" y1="50" x2="200" y2="20" stroke="#c0504d" stroke-width="8" stroke-linecap="round" id="support" style="display: none;"/>
-                
-                <!-- Rope -->
                 <line x1="280" y1="20" x2="280" y2="60" stroke="#3d3d3d" stroke-width="6" id="rope" style="display: none;"/>
-                
-                <!-- Head -->
                 <circle cx="280" cy="85" r="25" stroke="#3d3d3d" stroke-width="6" fill="none" id="head" style="display: none;"/>
-                
-                <!-- Body -->
                 <line x1="280" y1="110" x2="280" y2="170" stroke="#3d3d3d" stroke-width="6" stroke-linecap="round" id="body" style="display: none;"/>
-                
-                <!-- Left arm -->
                 <line x1="280" y1="130" x2="250" y2="150" stroke="#3d3d3d" stroke-width="6" stroke-linecap="round" id="left-arm" style="display: none;"/>
-                
-                <!-- Right arm -->
                 <line x1="280" y1="130" x2="310" y2="150" stroke="#3d3d3d" stroke-width="6" stroke-linecap="round" id="right-arm" style="display: none;"/>
-                
-                <!-- Left leg -->
                 <line x1="280" y1="170" x2="255" y2="210" stroke="#3d3d3d" stroke-width="6" stroke-linecap="round" id="left-leg" style="display: none;"/>
-                
-                <!-- Right leg -->
                 <line x1="280" y1="170" x2="305" y2="210" stroke="#3d3d3d" stroke-width="6" stroke-linecap="round" id="right-leg" style="display: none;"/>
             </svg>
         </div>
@@ -1381,45 +1356,19 @@
         </div>
     </div>
 
-    <script type="module">
-        // ========= 1. Import Farcaster SDK =========
-        import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk';
-        sdk.actions.ready();
-        console.log("Farcaster SDK ready() called immediately.");
-
-        // ========= 2. Wallet & Payment Configuration =========
+    <script>
+        // ========= WALLET & PAYMENT SYSTEM =========
         const GAME_FEE_ETH = '0.00001';
-        const DEVELOPER_WALLET = '0xE01CFDD6e6cB41C2b33605138BB2E53E492A5CB3'; // Replace with your wallet address
+        const DEVELOPER_WALLET = '0xE01CFDD6e6cB41C2b33605138BB2E53E492A5CB3'; // REPLACE WITH YOUR WALLET
 
         let userAddress = null;
         let fid = null;
         let isProcessing = false;
 
-        // ========= 3. Helper Functions =========
         function parseEther(x) { 
             const [w, f = ""] = String(x).split('.'); 
             const frac = (f + '0'.repeat(18)).slice(0, 18); 
             return '0x' + (BigInt(w) * 10n**18n + BigInt(frac)).toString(16); 
-        }
-        
-        async function getProvider() { 
-            try { 
-                console.log("Attempting to get provider via sdk.wallet.getEthereumProvider()");
-                const p = await sdk.wallet.getEthereumProvider(); 
-                if (p) {
-                    console.log("Farcaster provider found:", p);
-                    return p;
-                }
-            } catch(e) {
-                console.warn("Error getting Farcaster provider, falling back to window.ethereum", e);
-            } 
-            console.log("Farcaster provider not found, checking window.ethereum");
-            if (window.ethereum) {
-                console.log("window.ethereum found:", window.ethereum);
-                return window.ethereum;
-            }
-            console.log("No provider found.");
-            return null; 
         }
 
         function showStatusMessage(message, type = 'info') {
@@ -1432,7 +1381,6 @@
             container.innerHTML = '';
         }
 
-        // ========= 4. Wallet Connection =========
         async function handleConnectWallet() {
             if (isProcessing) return;
             
@@ -1444,44 +1392,31 @@
             console.log("Attempting wallet connection...");
             
             try {
-                const provider = await getProvider();
-                if (!provider) {
-                    throw new Error('No wallet provider available. Ensure you are in a Farcaster client or have a wallet extension.');
+                // Check if window.ethereum is available
+                if (typeof window.ethereum === 'undefined') {
+                    throw new Error('No wallet detected! Please install MetaMask or use a Web3-enabled browser.');
                 }
-                
-                showStatusMessage('2/3: Requesting account access...', 'info');
-                console.log("Provider found. Requesting accounts...");
 
-                const accounts = await provider.request({ method: 'eth_requestAccounts' });
+                showStatusMessage('2/3: Requesting account access...', 'info');
+                console.log("Wallet provider found. Requesting accounts...");
+
+                // Request accounts from MetaMask/wallet
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
                 
                 if (accounts && accounts.length > 0) {
                     userAddress = accounts[0];
                     console.log("Account connected:", userAddress);
 
-                    showStatusMessage('3/3: Getting user data...', 'info');
-                    try {
-                        console.log("Attempting to get user data from Farcaster SDK...");
-                        if (sdk && typeof sdk.getUserData === 'function') {
-                            const userData = await sdk.getUserData();
-                            if (userData && userData.fid) {
-                                fid = userData.fid;
-                                showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}, FID: ${userData.fid}`, 'success');
-                                console.log("User data retrieved:", userData);
-                            } else {
-                                fid = null; 
-                                showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)} (FID not available)`, 'success');
-                                console.log("Address connected, but FID not available via sdk.getUserData().");
-                            }
-                        } else {
-                            fid = null; 
-                            showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)} (FID function not available)`, 'success');
-                            console.log("sdk.getUserData() is not available.");
-                        }
-                    } catch (fidError) {
-                        fid = null; 
-                        showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)} (FID not available)`, 'success');
-                        console.warn("Could not get FID via sdk.getUserData():", fidError);
-                    }
+                    showStatusMessage('3/3: Connected successfully!', 'info');
+                    
+                    // Try to get FID (may not be available)
+                    fid = null;
+                    
+                    setTimeout(() => {
+                        showStatusMessage(`✅ Connected! Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}`, 'success');
+                    }, 500);
 
                     // Update UI
                     connectBtn.textContent = `✅ Connected: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
@@ -1502,7 +1437,6 @@
             isProcessing = false;
         }
 
-        // ========= 5. Payment & Game Start =========
         async function handleStartGame() {
             if (!userAddress) {
                 showStatusMessage('Please connect your wallet first.', 'error');
@@ -1518,17 +1452,16 @@
             const startBtn = document.getElementById('start-game-btn');
             startBtn.disabled = true;
             
-            showStatusMessage('1/3: Locating wallet provider...', 'info');
+            showStatusMessage('1/3: Preparing transaction...', 'info');
 
             try {
-                const provider = await getProvider();
-                if (!provider) {
-                    throw new Error('No wallet provider found.');
+                if (typeof window.ethereum === 'undefined') {
+                    throw new Error('Wallet provider not found.');
                 }
                 
                 showStatusMessage('2/3: Please approve the payment in your wallet...', 'info');
 
-                const hash = await provider.request({
+                const hash = await window.ethereum.request({
                     method: 'eth_sendTransaction',
                     params: [{
                         from: userAddress, 
@@ -1541,7 +1474,6 @@
                 console.log("Transaction Hash:", hash);
                 
                 setTimeout(() => {
-                    // Show difficulty screen
                     document.getElementById('wallet-screen').style.display = 'none';
                     document.getElementById('difficulty-screen').style.display = 'block';
                     clearStatusMessage();
@@ -1549,32 +1481,28 @@
 
             } catch (e) {
                 console.error('Payment error:', e);
-                showStatusMessage(`❌ Payment failed: ${e.message.split('.')[0]}.`, 'error');
+                const errorMsg = e.message.includes('User denied') ? 'Transaction rejected by user' : e.message.split('.')[0];
+                showStatusMessage(`❌ Payment failed: ${errorMsg}`, 'error');
                 startBtn.disabled = false;
             }
             
             isProcessing = false;
         }
 
-        // ========= 6. Make functions global =========
-        window.handleConnectWallet = handleConnectWallet;
-        window.handleStartGame = handleStartGame;
-        window.goBackToWallet = function() {
+        function goBackToWallet() {
             document.getElementById('difficulty-screen').style.display = 'none';
             document.getElementById('wallet-screen').style.display = 'block';
-        };
-        window.goBackToDifficulty = function() {
+        }
+
+        function goBackToDifficulty() {
             document.getElementById('game-container').style.display = 'none';
             document.getElementById('difficulty-screen').style.display = 'block';
-        };
+        }
 
-        // ========= 7. Event Listeners =========
         document.getElementById('connect-wallet-btn').addEventListener('click', handleConnectWallet);
         document.getElementById('start-game-btn').addEventListener('click', handleStartGame);
-    </script>
 
-    <script>
-        // ========= Game Logic =========
+        // ========= GAME LOGIC =========
         const wordDatabase = {
             easy: [
                 'APPLE', 'BOOK', 'CHAIR', 'DOOR', 'FISH', 'GAME', 'HAND', 'JUMP',
