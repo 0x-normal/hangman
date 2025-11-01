@@ -7,7 +7,7 @@ const nextConfig = {
         // Source path: When a user visits the root of the app (e.g., https://your-app.com/)
         source: '/',
         // Destination path: Tell Next.js to internally serve the static HTML file
-        destination: '/hangman.html',
+        destination: '/public/hangman.html',
       },
     ];
   },
@@ -18,3 +18,4 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+
