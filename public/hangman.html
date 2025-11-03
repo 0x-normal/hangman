@@ -484,6 +484,35 @@
             animation: shake 0.5s ease-in-out infinite;
         }
 
+        /* Reveal Message */
+        .reveal-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 999;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: messageSlide 0.5s ease;
+            pointer-events: none;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -1195,17 +1224,87 @@
             updateHeartsDisplay();
             updateStats();
             
+            // Reveal the correct word
+            revealCorrectWord('timeout');
+            
             if (hearts <= 0) {
-                endGame(false);
+                // Show game over modal after revealing word
+                setTimeout(() => {
+                    endGame(false);
+                }, 2000);
             } else {
+                // Continue to next word after showing answer
                 setTimeout(() => {
                     hangmanParts.forEach(part => {
                         const element = document.getElementById(part);
                         if (element) element.style.display = 'none';
                     });
                     init();
-                }, 1000);
+                }, 2500);
             }
+        }
+
+        function revealCorrectWord(reason = 'lose') {
+            // Show notification message
+            const message = document.createElement('div');
+            message.className = 'reveal-message';
+            if (reason === 'timeout') {
+                message.textContent = '⏰ TIME\'S UP!';
+                message.style.background = 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)';
+            } else {
+                message.textContent = '❌ WRONG!';
+                message.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%)';
+            }
+            document.body.appendChild(message);
+            
+            // Remove message after 1.5 seconds
+            setTimeout(() => {
+                message.remove();
+            }, 1500);
+            
+            // Disable all keys during reveal
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                key.disabled = true;
+            });
+            
+            // Disable hint button
+            document.getElementById('hint-btn').disabled = true;
+            
+            // Fill in all letters with visual indication
+            const display = document.getElementById('word-display');
+            display.innerHTML = '';
+            
+            currentWord.split('').forEach((letter, index) => {
+                const box = document.createElement('div');
+                box.className = 'letter-box';
+                
+                const span = document.createElement('span');
+                span.className = 'letter';
+                span.textContent = letter;
+                
+                // Different color based on reason
+                if (reason === 'timeout') {
+                    span.style.color = '#ff9800'; // Orange for timeout
+                    span.style.textShadow = '2px 2px 4px rgba(255, 152, 0, 0.4)';
+                } else {
+                    span.style.color = '#ff6b6b'; // Red for wrong guesses
+                    span.style.textShadow = '2px 2px 4px rgba(255, 107, 107, 0.4)';
+                }
+                
+                // Stagger animation
+                span.style.animation = 'popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                span.style.animationDelay = `${index * 0.05}s`;
+                span.style.animationFillMode = 'backwards';
+                
+                box.appendChild(span);
+                
+                const line = document.createElement('div');
+                line.className = 'letter-line';
+                box.appendChild(line);
+                
+                display.appendChild(box);
+            });
         }
 
         // ========= UI/Status Functions =========
@@ -1492,35 +1591,42 @@
                 updateHeartsDisplay();
                 updateStats();
                 
+                // Reveal correct word first
+                revealCorrectWord('lose');
+                
                 if (hearts <= 0) {
-                    const modal = document.getElementById('game-modal');
-                    const title = document.getElementById('modal-title');
-                    const subtitle = document.getElementById('modal-subtitle');
-                    const answer = document.getElementById('modal-answer');
-                    
-                    title.textContent = 'GAME OVER';
-                    title.style.color = '#ff6b6b';
-                    subtitle.textContent = 'You lost all hearts! The answer was:';
-                    
-                    answer.innerHTML = '';
-                    currentWord.split('').forEach((letter, index) => {
-                        const letterBox = document.createElement('div');
-                        letterBox.className = 'answer-letter';
-                        letterBox.textContent = letter;
-                        letterBox.style.setProperty('--i', index);
-                        letterBox.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%)';
-                        answer.appendChild(letterBox);
-                    });
-                    
-                    modal.classList.add('show');
+                    // Show game over modal after brief delay
+                    setTimeout(() => {
+                        const modal = document.getElementById('game-modal');
+                        const title = document.getElementById('modal-title');
+                        const subtitle = document.getElementById('modal-subtitle');
+                        const answer = document.getElementById('modal-answer');
+                        
+                        title.textContent = 'GAME OVER';
+                        title.style.color = '#ff6b6b';
+                        subtitle.textContent = 'You lost all hearts! The final answer was:';
+                        
+                        answer.innerHTML = '';
+                        currentWord.split('').forEach((letter, index) => {
+                            const letterBox = document.createElement('div');
+                            letterBox.className = 'answer-letter';
+                            letterBox.textContent = letter;
+                            letterBox.style.setProperty('--i', index);
+                            letterBox.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%)';
+                            answer.appendChild(letterBox);
+                        });
+                        
+                        modal.classList.add('show');
+                    }, 2000);
                 } else {
+                    // Continue to next word after showing answer
                     setTimeout(() => {
                         hangmanParts.forEach(part => {
                             const element = document.getElementById(part);
                             if (element) element.style.display = 'none';
                         });
                         init();
-                    }, 1500);
+                    }, 2500);
                 }
             }
         }
