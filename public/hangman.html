@@ -1035,7 +1035,7 @@
 
         <!-- Timer Display -->
         <div class="timer-display">
-            <div class="timer-box" id="timer-display">⏱️ 30s</div>
+            <div class="timer-box" id="timer-display">⏱️ 60s</div>
         </div>
 
         <div class="hangman-canvas">
@@ -1157,7 +1157,7 @@
         let wordsPlayed = 0;
         
         // Timer variables
-        let timeLeft = 30;
+        let timeLeft = 60;
         let timerInterval = null;
         
         let userAddress = null;
@@ -1186,7 +1186,7 @@
         // ========= Timer Functions =========
         function startTimer() {
             stopTimer(); // Clear any existing timer
-            timeLeft = 30;
+            timeLeft = 60;
             updateTimerDisplay();
             
             timerInterval = setInterval(() => {
